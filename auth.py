@@ -55,7 +55,7 @@ def register_user(username, password):
         saved_username = line.split(":")[0].strip()
 
         if saved_username != username:
-            print(f"User '{saved_username}' registration complete.")
+            print(f"User '{username}' registration complete.")
         else:
             print(f"User {username} already exists")
             print(f"User '{username}' registration failed.")
