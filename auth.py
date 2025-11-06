@@ -79,8 +79,9 @@ def login_user(username, password):
                 print(f"Logged in as '{saved_username}'")
             else:
               print(f"Wrong password!")
-
+          return False
     return login_user(username, password)
+
 
 if __name__ == "__main__":  #Means to only run the code if the file is not imported from elsewhere.
     print("Enter your username and password.\n")
@@ -93,10 +94,5 @@ if __name__ == "__main__":  #Means to only run the code if the file is not impor
     password = input("\nPassword: ")
     login_user(username, password)
 
- exit(1)
-
-
-
-
-
+    exit(1)
 
