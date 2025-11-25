@@ -1,5 +1,7 @@
 import bcrypt
 import os
+import re
+
 
 USER_DATA_FILE = "users.txt"
 
@@ -24,7 +26,8 @@ def hash_password(password: str) -> str:
     print("Hashed: ", hashed_password)
 
     #TO DO: Decode the hash back to a string to store in a text file.
-    return hashed_password.decode("utf-8")  #this is important because later when you verify if you don't do it, you'll get a TypeError. since hashed_password becomes none, as it doesn't return anything and return requires values.
+    return hashed_password.decode(
+        "utf-8")  #this is important because later when you verify if you don't do it, you'll get a TypeError. since hashed_password becomes none, as it doesn't return anything and return requires values.
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
@@ -45,20 +48,18 @@ def register_user(username, password):
     hashed_password = hash_password(password)
 
     if not os.path.exists(USER_DATA_FILE):
-        open(USER_DATA_FILE, "w").close() #creates an empty file
+        open(USER_DATA_FILE, "w").close()  #creates an empty file
 
     #TO DO: Check if the username  already exists.
     #start off by checking if file exists. if not, initialize an empty list
     with open(USER_DATA_FILE, "r") as file:
         lines = file.readlines()
     for line in lines:
-        saved_username = line.split(":")[0].strip()
+        saved_username = line.split(",")[0].strip()
 
-        if saved_username != username:
-            print(f"User '{username}' registration complete.")
-        else:
+        if saved_username == username:
             print(f"User {username} already exists")
-            print(f"User '{username}' registration failed.")
+            return False
 
     #TO DO: Append the new user to the file
     # #TO DO: Hash the Password
@@ -68,31 +69,127 @@ def register_user(username, password):
     return True
 
 
-def login_user(username, password):
-    hashed_password = hash_password(password)
+def login_user(username,password):
+    #TO DO: Handle the case where no users are registered yet
+    if not(os.path.exists(USER_DATA_FILE)):
+        print("No users registered yet")
+        return False
     saved_username = username
+    #TO DO: Search for the username in the file
     with open(USER_DATA_FILE, "r") as file:
-      for line in file.readlines():
-          username,saved_hash = line.strip().split(',', 1)
-          if username == saved_username:
-            if verify_password(password, hashed_password):
-                print(f"Logged in as '{saved_username}'")
+        for line in file.readlines():
+            [username, saved_hash] = line.strip().split(',', 1)
+            #TO DO: If username matches, verify the password
+            if username == saved_username:
+                if verify_password(password, saved_hash):
+                    print(f"Logged in as '{saved_username}'")
+                    return True
+                else:
+                    print(f"Wrong password!")
+                    return False
+        print("Username not found")
+        return False
+
+#TO DO:Validate username format
+def validate_username(username):
+    while True:
+        if not(3<=len(username)<=25):
+            return False, "Username must be between 3 and 25 characters long"
+        pattern = r"^[a-zA-Z0-9]+$"
+        if re.match(pattern, username):
+            return True, None
+        return False, print(f"User '{username}' is not a valid username.")
+pass
+
+def validate_password(password):
+    while True:
+        if not(8<= len(password) <=30):
+            return False, "Password must be between 8 and 30 characters long."
+
+        l = u = d = p = 0
+        for char in password:
+            if char.islower():
+                l += 1
+            elif char.isupper():
+                u += 1
+            elif char.isdigit():
+                d += 1
+            elif char.isspace():
+                p += 1
+        if l>=1 and u>=1 and d>=1:
+            print("Strong password")
+            return True, None
+        return False, "Invalid Password. Password must contain at least one uppercase, one lowercase and one digit."
+
+pass
+
+#Implement the Main Menu
+def display_menu():
+    """Display menu options"""
+    print("\n"+"_"*50)
+    print("MULTI-DOMAIN INTELLIGENCE PLATFORM")
+    print("_"*50)
+    print("WELCOME")
+    print("\n1. Register")
+    print("\n2. Login")
+    print("\n3. Exit")
+    print("_"*50)
+
+def main():
+    """Main function/ Main program loop"""
+    print("\nWelcome to Multi-Domain Intelligence Platform")
+    while True:
+        display_menu()
+        option = input("Option: ").strip()
+        if option == "1":
+            #Registration Flow
+            print("\n---REGISTRATION---")
+            username = input("Username: ").strip()
+            password = input("Password: ")
+            confirm = input("Confirm password: ")
+
+            #Validate Username
+            is_valid, error = validate_username(username)
+            if not is_valid:
+                print(f"Error: {error}")
+                continue
+            #Validate password
+            is_valid, error = validate_password(password)
+            if not is_valid:
+                print(f"Error: {error}")
+                continue
+            if confirm != password:
+                print(f"Error: Passwords don't match.")
+                continue
+
+            #Register the user
+            if register_user(username, password):
+                print(f"'{username}' registered successfully")
             else:
-              print(f"Wrong password!")
-          return False
-    return login_user(username, password)
+                print(f"Error: {username} already exists.")
+                continue
 
+        elif option == "2":
+            #Login Flow
+            print("\n---LOGIN---")
+            username = input("Username: ").strip()
+            password = input("Password: ").strip()
 
-if __name__ == "__main__":  #Means to only run the code if the file is not imported from elsewhere.
-    print("Enter your username and password.\n")
-    username=input("Username: ")
-    password=input("\nPassword: ")
-    register_user(username, password)
+            #Attempt Login
+            if login_user(username, password):
+                print(f"Hello '{username}'!")
+            else:
+                print("Login Failed. Invalid Username or Password.")
+                input("\nPress Enter to try again or ESC to exit...")
+                continue
 
-    print("TESTING LOGIN\n")
-    username = input("Username: ")
-    password = input("\nPassword: ")
-    login_user(username, password)
+        elif option == "3":
+            #Exit
+            print("Exiting...")
+            break
 
-    exit(1)
+        else:
+            print("\nInvalid option. Please try again.")
 
+if __name__ == "__main__":
+    main()
