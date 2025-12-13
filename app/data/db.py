@@ -7,6 +7,7 @@ DATA_DIR = PROJECT_ROOT / "DATA"
 DB_PATH = DATA_DIR / "intelligence_platform.db"
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 def connect_database(db_path=DB_PATH):
     """Connect to SQLite database."""
     return sqlite3.connect(str(db_path))

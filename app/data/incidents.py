@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from my_app.app.data.db import connect_database
+from app.data.db import DatabaseManager
 
 def insert_incident(date, incident_type, severity, status, description, reported_by):
     """Insert new incident."""
@@ -116,7 +116,7 @@ def get_incident_types_with_many_cases(conn, min_count=5):
     return df
 
 # Test: Run analytical queries
-conn = connect_database()
+conn = DatabaseManager
 
 #print("\n Incidents by Type:")
 #df_by_type = get_incidents_by_type_count(conn)

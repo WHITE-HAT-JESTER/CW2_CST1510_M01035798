@@ -1,7 +1,7 @@
 import pandas as pd  # pandas is a library for working with tables (DataFrames)
+from .db import DatabaseManager
 from pathlib import Path  # pathlib helps you work with file and folder paths
 import re  # re is the regular expressions module for pattern matching in text
-from app.data.db import connect_database
 
 #
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -10,7 +10,7 @@ DATA_DIR = PROJECT_ROOT / "DATA"
 CSV_PATHS = {
     "users": DATA_DIR / "users.txt",
     "cyber_incidents": DATA_DIR / "cyber_incidents.csv",
-    "datasets_metadata": DATA_DIR / "datasets_metadata.csv",
+    "datasets_metadata": DATA_DIR / "datasets_metapidata.csv",
     "it_tickets": DATA_DIR / "it_tickets.csv",
 }
 
@@ -33,7 +33,7 @@ def create_cyber_incidents_table(conn):
         incident_id INTEGER PRIMARY KEY AUTOINCREMENT,
         date TEXT,
         incident_type TEXT,
-        severity TEXT CHECK(severity IN ('low', 'medium', 'high','critical')),
+        severity TEXT CHECK(severity IN ('Low', 'Medium', 'High','Critical')),
         status TEXT DEFAULT 'open',
         description TEXT,
         reported_by TEXT,
@@ -321,7 +321,7 @@ def setup_database_complete():
     print("=" * 60)
 
     # 1. Connect
-    conn = connect_database()
+    conn = DatabaseManager
 
     # 2. Create tables
     print("\n[1/3] Creating tables...")
@@ -354,9 +354,9 @@ def setup_database_complete():
 
     return total_rows
 
-# Script entry point
+# # Script entry point
 if __name__ == "__main__":
-    conn = connect_database()
+    conn = DatabaseManager
     create_all_tables(conn)
     load_all_csv_data(conn)
     conn.close()
