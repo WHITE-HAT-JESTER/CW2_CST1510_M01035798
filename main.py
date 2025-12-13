@@ -140,10 +140,6 @@ def main():
         delete_ticket(test_ticket_id)
         print(f"Deleted ticket #{test_ticket_id}")
 
-    if dataset_id:
-        delete_dataset(dataset_id)
-        print(f"Deleted dataset #{dataset_id}")
-
     if test_username:
         delete_user(test_username)
         print(f"Deleted user '{test_username}'")

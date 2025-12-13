@@ -2,3 +2,8 @@
 CW2 REF LINKS USED.docx
 requirements.txt
 .streamlit
+__pycache__/
+env/
+venv/
+__init__.py
+
