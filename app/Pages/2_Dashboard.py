@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from streamlit_option_menu import option_menu
 
 #if it were a sidebar menu, you shouldn't include orientation to make it prettier
