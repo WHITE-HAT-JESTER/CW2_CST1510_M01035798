@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
-from my_app.app.data.db import connect_database
-
+from app.data.db import connect_database
+from app.data.schema import create_datasets_metadata_table
 
 def insert_dataset(dataset_name, category, source, last_updated,
                    record_count, file_size_mb, uploaded_by, created_at):
@@ -32,7 +32,7 @@ def get_all_datasets():
     """Get all dataset metadata rows as a pandas DataFrame ordered by id descending."""
     conn = connect_database()
 
-    df = pd.read_sql_query("SELECT * FROM datasets_metadata ORDER BY id DESC", conn)
+    df = pd.read_sql_query("SELECT * FROM datasets_metadata ORDER BY incident_id DESC", conn)
     conn.close()
     return df
 

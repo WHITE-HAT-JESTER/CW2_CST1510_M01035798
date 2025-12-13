@@ -3,7 +3,7 @@ import os
 import re
 
 
-USER_DATA_FILE = "../../../DATA/users.txt"
+USER_DATA_FILE = "../DATA/users.txt"
 
 
 #hashes a password using bcrypt with automatic salt generation.
@@ -64,7 +64,7 @@ def register_user(username, password):
     #TO DO: Append the new user to the file
     # #TO DO: Hash the Password
     # #this means the file will open with append mode enabled
-    with open("../../../DATA/users.txt", "a") as f:
+    with open("../DATA/users.txt", "a") as f:
         f.write(f"{username},{hashed_password}\n")
     return True
 

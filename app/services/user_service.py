@@ -1,8 +1,8 @@
 import bcrypt
-from my_app.app.data.db import connect_database, new_dir_path
-from my_app.app.data.schema import create_users_table, create_all_tables
+from app.data.db import connect_database, DATA_DIR
+from app.data.schema import create_users_table, create_all_tables
 
-file_path = new_dir_path
+file_path = DATA_DIR
 
 def register_user(username, password, role='user'):
     """Register new user with password hashing."""
@@ -68,7 +68,7 @@ def login_user(username, password):
         return False, "Incorrect password."
 
 
-def migrate_users_from_file(user_file_path= new_dir_path/"users.txt"):
+def migrate_users_from_file(user_file_path= DATA_DIR/"users.txt"):
     """Migrate users from text file to database."""
     # ... migration logic ...
     conn = connect_database()

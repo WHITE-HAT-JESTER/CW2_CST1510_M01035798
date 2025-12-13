@@ -1,5 +1,5 @@
 import pandas as pd  # pandas is a library for working with tables (DataFrames)
-from .db import DatabaseManager
+from .db import connect_database
 from pathlib import Path  # pathlib helps you work with file and folder paths
 import re  # re is the regular expressions module for pattern matching in text
 
@@ -321,7 +321,7 @@ def setup_database_complete():
     print("=" * 60)
 
     # 1. Connect
-    conn = DatabaseManager
+    conn = connect_database()
 
     # 2. Create tables
     print("\n[1/3] Creating tables...")
@@ -356,7 +356,7 @@ def setup_database_complete():
 
 # # Script entry point
 if __name__ == "__main__":
-    conn = DatabaseManager
+    conn = connect_database()
     create_all_tables(conn)
-    load_all_csv_data(conn)
+    # load_all_csv_data(conn)
     conn.close()
