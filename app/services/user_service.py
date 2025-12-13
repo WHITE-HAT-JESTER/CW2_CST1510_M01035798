@@ -1,6 +1,6 @@
 import bcrypt
-from app.data.db import connect_database, new_dir_path
-from app.data.schema import create_users_table, create_all_tables
+from my_app.app.data.db import connect_database, new_dir_path
+from my_app.app.data.schema import create_users_table, create_all_tables
 
 file_path = new_dir_path
 

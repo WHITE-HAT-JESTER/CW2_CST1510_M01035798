@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from app.data.db import connect_database
+from my_app.app.data.db import connect_database
 
 def insert_incident(date, incident_type, severity, status, description, reported_by):
     """Insert new incident."""

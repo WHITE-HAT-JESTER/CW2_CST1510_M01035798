@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from app.data.db import connect_database
+from my_app.app.data.db import connect_database
 
 def insert_ticket(ticket_id, priority, subject, description, assigned_to,
                   category, status, resolved_date, created_at=None):

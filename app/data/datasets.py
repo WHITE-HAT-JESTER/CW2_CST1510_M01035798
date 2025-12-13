@@ -1,7 +1,7 @@
 import sqlite3
 import pandas as pd
-from app.data.db import connect_database
-from app.data.schema import create_datasets_metadata_table
+from my_app.app.data.db import connect_database
+
 
 def insert_dataset(dataset_name, category, source, last_updated,
                    record_count, file_size_mb, uploaded_by, created_at):

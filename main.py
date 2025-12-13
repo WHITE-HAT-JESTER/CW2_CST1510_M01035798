@@ -1,7 +1,7 @@
-from app.data.db import DB_PATH, connect_database
-from app.data.schema import create_all_tables,load_all_csv_data, CSV_PATHS
-from app.services.user_service import register_user, login_user, migrate_users_from_file
-from app.data.incidents import insert_incident, get_all_incidents
+from my_app.app.data.db import DB_PATH, connect_database
+from my_app.app.data.schema import create_all_tables, CSV_PATHS
+from my_app.app.services.user_service import register_user, login_user, migrate_users_from_file
+from my_app.app.data.incidents import insert_incident, get_all_incidents
 
 def main():
     print("=" * 60)
@@ -58,7 +58,7 @@ def demonstrate_all_crud():
     print("\n2. DATA SCIENCE:")
     print("   Create: Insert new dataset")
     # You need to import datasets functions
-    from app.services.datasets import insert_dataset
+    from my_app.app.services import insert_dataset
     dataset_id = insert_dataset("Test_Dataset", "Test", "Manual", "2024-11-10", 100, 5.0, "admin", "2024-11-10")
     print(f"   Created dataset #{dataset_id}")
 
@@ -66,7 +66,7 @@ def demonstrate_all_crud():
     print("\n3. IT OPERATIONS:")
     print("   Create: Insert new ticket")
     # You need to import tickets functions
-    from app.services.tickets import insert_ticket
+    from my_app.app.services import insert_ticket
     ticket_id = insert_ticket("T9999", "Medium", "Test Ticket", "Testing CRUD", "IT_Support_A", "General", "Open", None)
     print(f"Created ticket #{ticket_id}")
 
