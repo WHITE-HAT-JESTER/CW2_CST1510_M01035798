@@ -1,5 +1,5 @@
 import pandas as pd  # pandas is a library for working with tables (DataFrames)
-from .db import connect_database
+from app.data.db import connect_database
 from pathlib import Path  # pathlib helps you work with file and folder paths
 import re  # re is the regular expressions module for pattern matching in text
 
@@ -89,7 +89,7 @@ def create_all_tables(conn):
     create_datasets_metadata_table(conn)
     create_it_tickets_table(conn)
 
-# This function shows the first few lines of a file if we can't read it properly
+# show the first few lines of a file if we can't read it properly
 def preview_raw_file(path: Path, max_lines: int = 8):
     try:
         text = path.read_text(encoding="utf-8", errors="replace")  # read the file as text
@@ -102,13 +102,13 @@ def preview_raw_file(path: Path, max_lines: int = 8):
     except Exception as e:
         print(f"Could not read raw file {path} for preview: {e}")
 
-# This function checks if a string looks like a hashed password
+#  checking if a string looks like a hashed password
 def looks_like_hash(s: str) -> bool:
     if not isinstance(s, str):
         return False
     return bool(re.match(r"^\$2[aby]\$|\$argon2", s))  # regex pattern for common password hashes
 
-# This function tries to read a users file and return a DataFrame with username and password_hash
+#  read a users file and return a DataFrame with username and password_hash
 def read_users(path: Path) -> pd.DataFrame:
     # First try: read the file with headers
     try:
@@ -209,21 +209,21 @@ def load_users_table(conn, path: Path, replace: bool = False) -> int:
         return 0
 
 
-# This function tries to read a CSV file, and falls back to whitespace-separated if needed
+#trying to read a CSV file, and falls back to whitespace-separated if needed
 def simple_read_csv(path: Path) -> pd.DataFrame:
     try:
         return pd.read_csv(path)
     except Exception:
         return pd.read_csv(path, header=None, sep=r'\s+', engine='python', dtype=str)
 
-# This function removes empty unnamed columns from a DataFrame
+#remove empty unnamed columns from a DataFrame
 def clean_unnamed_columns(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.columns:
         if str(col).lower().startswith("unnamed") and df[col].isna().all():
             df.drop(columns=[col], inplace=True)
     return df
 
-# This function loads the cyber_incidents table into the database
+#loads the cyber_incidents table into the database
 def load_cyber_incidents_table(conn, path: Path) -> int:
     try:
         df = simple_read_csv(path)
@@ -240,7 +240,6 @@ def load_cyber_incidents_table(conn, path: Path) -> int:
         print(f"Error loading cyber_incidents from {path.name}: {e}")
         return 0
 
-# This function loads the datasets_metadata table into the database
 def load_datasets_metadata_table(conn, path: Path) -> int:
     try:
         df = simple_read_csv(path)
@@ -264,7 +263,6 @@ def load_datasets_metadata_table(conn, path: Path) -> int:
         print(f"Error loading datasets_metadata from {path.name}: {e}")
         return 0
 
-# This function loads the it_tickets table into the database
 def load_it_tickets_table(conn, path: Path) -> int:
     try:
         df = simple_read_csv(path)
@@ -358,5 +356,5 @@ def setup_database_complete():
 if __name__ == "__main__":
     conn = connect_database()
     create_all_tables(conn)
-    # load_all_csv_data(conn)
+    load_all_csv_data(conn)
     conn.close()

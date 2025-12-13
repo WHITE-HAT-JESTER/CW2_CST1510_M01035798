@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from .db import connect_database
+from app.data.db import connect_database
 
 def insert_incident(date, incident_type, severity, status, description, reported_by):
     """Insert new incident."""
@@ -29,15 +29,28 @@ def insert_incident(date, incident_type, severity, status, description, reported
 def get_all_incidents():
     """Get all incidents as DataFrame."""
     conn = connect_database()
-    df = pd.read_sql_query("SELECT * FROM cyber_incidents ORDER BY incident_id DESC",
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM cyber_incidents")
+        cursor.fetchall()
+        df = pd.read_sql_query("SELECT * FROM cyber_incidents ORDER BY incident_id DESC",
                            conn)
-    conn.close()
-    return df
+        return df
+    except Exception as e:
+        print(f"Database error. Failed to get incidents: {e}")
+        try:
+            df = pd.read_sql_query("SELECT * FROM cyber_incidents",conn)
+            return df
+        except:
+            return pd.DataFrame()
+    finally:
+        conn.close()
 
 def update_incident_status(conn, incident_id, new_status):
     """Update incident status."""
+    conn = connect_database()
     cursor = conn.cursor()
-    sql = "UPDATE cyber_incidents SET status = ? WHERE id = ?"
+    sql = "UPDATE cyber_incidents SET status = ? WHERE incident_id = ?"
 
     try:
         cursor.execute(sql, (new_status, incident_id))
@@ -47,11 +60,14 @@ def update_incident_status(conn, incident_id, new_status):
     except sqlite3.Error as e:
         print(f"Database error. Failed to update incident status: {e}")
         return 0
+    finally:
+        conn.close()
 
 def delete_incident(conn, incident_id):
     """Delete incident from database."""
+    conn = connect_database()
     cursor = conn.cursor()
-    sql = "DELETE FROM cyber_incidents WHERE id = ?"
+    sql = "DELETE FROM cyber_incidents WHERE incident_id = ?"
 
     try:
         cursor.execute(sql, (incident_id,))
@@ -61,6 +77,7 @@ def delete_incident(conn, incident_id):
     except sqlite3.Error as e:
         print(f"Database error. Failed to delete incident: {e}")
         return 0
+
 
 #Analytical Queries (The Big 6) - OPTIONAL it could be done with pandas
 

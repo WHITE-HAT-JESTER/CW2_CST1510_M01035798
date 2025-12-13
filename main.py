@@ -1,4 +1,4 @@
-from app.data.db import DatabaseManager
+from app.data.db import DB_PATH, connect_database
 from app.data.schema import create_all_tables,load_all_csv_data, CSV_PATHS
 from app.services.user_service import register_user, login_user, migrate_users_from_file
 from app.data.incidents import insert_incident, get_all_incidents
@@ -9,12 +9,13 @@ def main():
     print("=" * 60)
 
     # 1. Setup database
-    conn = DatabaseManager
+    conn = connect_database()
     create_all_tables(conn)
-
+    conn.close()
 
     # 2. Migrate users
-    migrate_users_from_file()
+    user_count=migrate_users_from_file()
+    print(f"User count: {user_count}")
 
     # 3. Test authentication
     success, msg = register_user("ulia", "SecurePass123!", "analyst")
@@ -24,6 +25,8 @@ def main():
     print(msg)
 
     # 4. Test CRUD
+    df=get_all_incidents()
+    print(f"{len(df)} incidents found")
     incident_id = insert_incident(
         "2024-11-05",
         "Phishing",
@@ -32,8 +35,17 @@ def main():
         "Suspicious email detected",
         "alice"
     )
-    print(f"Created incident #{incident_id}")
+    if incident_id:
+        print(f"Created incident #{incident_id}")
+    else:
+        print("Failed to create incident")
 
+    df = get_all_incidents()
+    print(f"Total incidents after insertion: {len(df)}")
+
+    if len(df) > 0:
+        print("\nSample incident data:")
+        print(df.head())
 
 
     # 5. Query data
@@ -87,7 +99,7 @@ def setup_database_complete():
 
     # Step 1: Connect
     print("\n[1/5] Connecting to database...")
-    conn = DatabaseManager
+    conn = connect_database()
     print("       Connected")
 
     # Step 2: Create tables
@@ -120,11 +132,12 @@ def setup_database_complete():
         count = cursor.fetchone()[0]
         print(f"{table:<25} {count:<15}")
 
+    conn.close()
 
     print("\n" + "=" * 60)
     print(" DATABASE SETUP COMPLETE!")
     print("=" * 60)
-    print(f"\n Database location: {DatabaseManager}")
+    print(f"\n Database location: {DB_PATH.resolve()}")
     print("\nYou're ready for Week 9 (Streamlit web interface)!")
 
 

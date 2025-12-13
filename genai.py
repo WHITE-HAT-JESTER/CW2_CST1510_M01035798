@@ -20,7 +20,7 @@ while True:
     full_reply=""
     for chunk in response:
         full_reply += chunk.text
-        print(chunk.text, end="")
+        print(full_reply, end="")
  #thus far we have only been using user input but there is no history hence the repetitive response to the same question
  #this is because it forgets what it said before
     messages.append({"role": "model", "parts":[{"{text}": full_reply}]})
