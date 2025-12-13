@@ -25,48 +25,10 @@ def insert_ticket(ticket_id, priority, subject, description, assigned_to,
     finally:
         conn.close()
 
-
-def get_all_tickets():
-    """Get all tickets as a pandas DataFrame ordered by id descending."""
-    conn = connect_database()
-    df = pd.read_sql_query("SELECT * FROM it_tickets ORDER BY ticket_id DESC", conn)
-    conn.close()
-    return df
-
-
-def update_ticket_status(conn, ticket_id, new_status):
-    """Update ticket status by id. Returns number of rows affected."""
-    cursor = conn.cursor()
-    sql = "UPDATE it_tickets SET status = ? WHERE ticket_id = ?"
-    try:
-        cursor.execute(sql, (new_status, ticket_id))
-        conn.commit()
-        print("Updated ticket status successfully.")
-        return cursor.rowcount
-    except sqlite3.Error as e:
-        print(f"Database error. Failed to update ticket status: {e}")
-        return 0
-
-
-def delete_ticket(conn, ticket_id):
-    """Delete ticket by id. Returns number of rows deleted."""
-    cursor = conn.cursor()
-    sql = "DELETE FROM it_tickets WHERE ticket_id = ?"
-    try:
-        cursor.execute(sql, (ticket_id,))
-        conn.commit()
-        print("Deleted ticket successfully.")
-        return cursor.rowcount
-    except sqlite3.Error as e:
-        print(f"Database error. Failed to delete ticket: {e}")
-        return 0
-
-
-# Analytical queries adapted for tickets table (similar style to incidents.py)
 def get_tickets_by_priority_count(conn):
     """
     Count tickets by priority.
-    Uses: SELECT, FROM, GROUP BY, ORDER BY
+    Use SELECT, FROM, GROUP BY, ORDER BY
     """
     query = """
     SELECT priority, COUNT(*) as count
@@ -81,7 +43,7 @@ def get_tickets_by_priority_count(conn):
 def get_open_tickets_by_assignee(conn):
     """
     Count open / in-progress tickets by assigned_to.
-    Uses: SELECT, FROM, WHERE, GROUP BY, ORDER BY
+    Uses SELECT, FROM, WHERE, GROUP BY, ORDER BY
     """
     query = """
     SELECT assigned_to, COUNT(*) as count
@@ -110,7 +72,91 @@ def get_tickets_with_many_updates(conn, min_count=5):
     return df
 
 
-# Test: Run analytical queries (same pattern as incidents.py)
+def get_all_tickets():
+    """Get all tickets as a pandas DataFrame ordered by id descending."""
+    conn = connect_database()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM it_tickets")
+        cursor.fetchall()
+        df = pd.read_sql_query("SELECT * FROM it_tickets ORDER BY ticket_id DESC", conn)
+        return df
+    except Exception as e:
+        print(f"Database error. Failed to get tickets: {e}")
+        try:
+            df = pd.read_sql_query("SELECT * FROM it_tickets", conn)
+            return df
+        except:
+            return pd.DataFrame()
+    finally:
+        conn.close()
+
+def get_ticket_by_id(ticket_id):
+    """Get a specific ticket by ticket_id."""
+    conn = connect_database()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM it_tickets WHERE ticket_id = ?", (ticket_id,))
+        ticket = cursor.fetchone()
+        return ticket
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to get ticket: {e}")
+        return None
+    finally:
+        conn.close()
+
+
+def update_ticket_assignment(ticket_id, new_assignee):
+    """Update ticket assignment."""
+    conn = connect_database()
+    cursor = conn.cursor()
+    sql = "UPDATE it_tickets SET assigned_to = ? WHERE ticket_id = ?"
+    try:
+        cursor.execute(sql, (new_assignee, ticket_id))
+        conn.commit()
+        print("Updated ticket assignment successfully.")
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to update ticket assignment: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+def update_ticket_status(conn, ticket_id, new_status):
+    """Update ticket status by id. Returns number of rows affected."""
+    conn = connect_database()
+    cursor = conn.cursor()
+    sql = "UPDATE it_tickets SET status = ? WHERE ticket_id = ?"
+    try:
+        cursor.execute(sql, (new_status, ticket_id))
+        conn.commit()
+        print("Updated ticket status successfully.")
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to update ticket status: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+def delete_ticket(conn, ticket_id):
+    """Delete ticket by id. Returns number of rows deleted."""
+    cursor = conn.cursor()
+    sql = "DELETE FROM it_tickets WHERE ticket_id = ?"
+    try:
+        cursor.execute(sql, (ticket_id,))
+        conn.commit()
+        print("Deleted ticket successfully.")
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to delete ticket: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+# Run analytical queries
 if __name__ == "__main__":
     conn = connect_database()
 

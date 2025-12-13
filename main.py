@@ -2,6 +2,10 @@ from app.data.db import DB_PATH, connect_database
 from app.data.schema import create_all_tables,load_all_csv_data, CSV_PATHS
 from app.services.user_service import register_user, login_user, migrate_users_from_file
 from app.data.incidents import insert_incident, get_all_incidents
+from app.data.datasets import insert_dataset, get_all_datasets
+from app.data.tickets import insert_ticket, get_all_tickets
+from app.data.users import insert_user, get_all_users
+from app.data.users import update_user_role, delete_user, check_username_exists
 
 def main():
     print("=" * 60)
@@ -25,8 +29,15 @@ def main():
     print(msg)
 
     # 4. Test CRUD
-    df=get_all_incidents()
-    print(f"{len(df)} incidents found")
+    print("\n"+"=" * 60)
+    print("TESTING CRUD OPERATIONS")
+    print("=" * 60)
+
+    ##CYBERSECURITY
+    print("\n1. CYBERSECURITY:")
+    print("-"*40)
+    incident_df=get_all_incidents()
+    print(f"{len(incident_df)} incidents found")
     incident_id = insert_incident(
         "2024-11-05",
         "Phishing",
@@ -40,18 +51,83 @@ def main():
     else:
         print("Failed to create incident")
 
-    df = get_all_incidents()
-    print(f"Total incidents after insertion: {len(df)}")
+    incident_df = get_all_incidents()
+    print(f"Total incidents after insertion: {len(incident_df)}")
 
-    if len(df) > 0:
+    if len(incident_df) > 0:
         print("\nSample incident data:")
-        print(df.head())
+        print(incident_df.head())
 
+    ##DATASETS
+    print("\n2. DATASETS:")
+    print("-" * 40)
+    datasets_df = get_all_datasets()
+    print(f"{len(datasets_df)} datasets found")
+    dataset_id = insert_dataset(
+        "Customer_Analytics_2024",
+        "Analytics",
+        "Internal",
+        "2024-11-05",
+        10000,
+        25.5,
+        "data_scientist",
+        "2024-11-05 10:00:00"
+    )
+    if dataset_id:
+        print(f"Created dataset #{dataset_id}")
+
+    datasets_df = get_all_datasets()
+    print(f"Total datasets: {len(datasets_df)}")
+
+    if len(datasets_df) > 0:
+        print("\nSample dataset data:")
+        print(datasets_df.head())
+
+    ##IT USERS
+    print("\n3. IT_TICKETS:")
+    print("-" * 40)
+    tickets_df = get_all_datasets()
+    print(f"{len(tickets_df)} tickets found")
+    test_ticket_id = "T9999"
+    ticket_row_id = insert_ticket(
+        test_ticket_id,
+        "Medium",
+        "Test Ticket",
+        "Network issue",
+        "IT_Support_A",
+        "Network",
+        "Open",
+        None,
+        "2024-11-05 09:00:00"
+    )
+    if ticket_row_id:
+        print(f"Created ticket #{ticket_row_id}")
+
+    tickets_df = get_all_tickets()
+    print(f"Total tickets: {len(tickets_df)}")
+
+    if len(tickets_df) > 0:
+        print("\nSample ticket data:")
+        print(tickets_df.head())
+
+    ##USERS
+    print("\n4. USERS:")
+    print("-" * 40)
+    users_df = get_all_users()
+    print(f"Users count: {len(users_df)}")
+    test_username = "test_crud_user"
+    if check_username_exists(test_username):
+        delete_user(test_username)
+
+    test_password_hash = "$2b$12$TestHash123"
+    user_id = insert_user(test_username, test_password_hash, "tester")
+    if user_id:
+        print(f"Created user #{user_id}")
+
+    users_df = get_all_users()
+    print(f"Total users: {len(users_df)}")
 
     # 5. Query data
-    df = get_all_incidents()
-    print(f"Total incidents: {len(df)}")
-
 def demonstrate_all_crud():
     """Show CRUD for all 3 domains """
     print("\n" + "=" * 60)

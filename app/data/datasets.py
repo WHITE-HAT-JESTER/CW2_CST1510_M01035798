@@ -5,7 +5,7 @@ from app.data.schema import create_datasets_metadata_table
 
 def insert_dataset(dataset_name, category, source, last_updated,
                    record_count, file_size_mb, uploaded_by, created_at):
-    """Insert a new dataset metadata record and return the new row id (or None on error)."""
+    """Insert a new dataset metadata record and return the new row id."""
     conn = connect_database()
     cursor = conn.cursor()
 
@@ -27,49 +27,10 @@ def insert_dataset(dataset_name, category, source, last_updated,
     finally:
         conn.close()
 
-
-def get_all_datasets():
-    """Get all dataset metadata rows as a pandas DataFrame ordered by id descending."""
-    conn = connect_database()
-
-    df = pd.read_sql_query("SELECT * FROM datasets_metadata ORDER BY incident_id DESC", conn)
-    conn.close()
-    return df
-
-
-def update_dataset_record_count(conn, dataset_id, new_record_count):
-    """Update dataset record_count by id. Returns number of rows affected."""
-    cursor = conn.cursor()
-    sql = "UPDATE datasets_metadata SET record_count = ? WHERE id = ?"
-    try:
-        cursor.execute(sql, (new_record_count, dataset_id))
-        conn.commit()
-        print("Updated dataset record_count successfully.")
-        return cursor.rowcount
-    except sqlite3.Error as e:
-        print(f"Database error. Failed to update dataset record_count: {e}")
-        return 0
-
-
-def delete_dataset(conn, dataset_id):
-    """Delete dataset metadata row by id. Returns number of rows deleted."""
-    cursor = conn.cursor()
-    sql = "DELETE FROM datasets_metadata WHERE id = ?"
-    try:
-        cursor.execute(sql, (dataset_id,))
-        conn.commit()
-        print("Deleted dataset successfully.")
-        return cursor.rowcount
-    except sqlite3.Error as e:
-        print(f"Database error. Failed to delete dataset: {e}")
-        return 0
-
-
-# Analytical queries adapted for datasets_metadata table (similar style to incidents.py)
 def get_datasets_by_category_count(conn):
     """
     Count datasets by category.
-    Uses: SELECT, FROM, GROUP BY, ORDER BY
+    Use SELECT, FROM, GROUP BY, ORDER BY
     """
     query = """
     SELECT category, COUNT(*) as count
@@ -84,7 +45,7 @@ def get_datasets_by_category_count(conn):
 def get_largest_datasets(conn, limit=5):
     """
     Return datasets with highest record_count.
-    Uses: SELECT, FROM, ORDER BY, LIMIT
+    Use SELECT, FROM, ORDER BY, LIMIT
     """
     query = """
     SELECT dataset_name, record_count, file_size_mb, uploaded_by
@@ -112,7 +73,82 @@ def get_datasets_uploaded_by(conn, uploader):
     return df
 
 
-# Test: Run analytical queries (same pattern as incidents.py)
+def get_all_datasets():
+    """Get all dataset metadata rows as a pandas DataFrame ordered by id descending."""
+    conn = connect_database()
+
+    df = pd.read_sql_query("SELECT * FROM datasets_metadata ORDER BY incident_id DESC", conn)
+    conn.close()
+    return df
+
+def update_dataset_info(dataset_id, dataset_name=None, category=None, source=None):
+    """Update dataset information."""
+    conn = connect_database()
+    cursor = conn.cursor()
+    updates = []
+    params = []
+
+    if dataset_name:
+        updates.append("dataset_name = ?")
+        params.append(dataset_name)
+    if category:
+        updates.append("category = ?")
+        params.append(category)
+    if source:
+        updates.append("source = ?")
+        params.append(source)
+
+    if not updates:
+        return 0
+
+    params.append(dataset_id)
+    sql = f"UPDATE datasets_metadata SET {', '.join(updates)} WHERE dataset_id = ?"
+
+    try:
+        cursor.execute(sql, params)
+        conn.commit()
+        print("Updated dataset info successfully.")
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to update dataset info: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+def update_dataset_record_count(conn, dataset_id, new_record_count):
+    """Update dataset record_count by id. Returns number of rows affected."""
+    conn = connect_database()
+    cursor = conn.cursor()
+    sql = "UPDATE datasets_metadata SET record_count = ? WHERE id = ?"
+    try:
+        cursor.execute(sql, (new_record_count, dataset_id))
+        conn.commit()
+        print("Updated dataset record_count successfully.")
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to update dataset record_count: {e}")
+        return 0
+    finally:
+        conn.close()
+
+
+def delete_dataset(conn, dataset_id):
+    """Delete dataset metadata row by id. Returns number of rows deleted."""
+    cursor = conn.cursor()
+    sql = "DELETE FROM datasets_metadata WHERE id = ?"
+    try:
+        cursor.execute(sql, (dataset_id,))
+        conn.commit()
+        print("Deleted dataset successfully.")
+        return cursor.rowcount
+    except sqlite3.Error as e:
+        print(f"Database error. Failed to delete dataset: {e}")
+        return 0
+    finally:
+        conn.close()
+
+#run queries
 if __name__ == "__main__":
     conn = connect_database()
 
