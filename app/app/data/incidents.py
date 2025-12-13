@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from app.data.db import connect_database
+from app.app.data.db import connect_database
 
 #Analytical Queries (The Big 6) - OPTIONAL it could be done with pandas
 

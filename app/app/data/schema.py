@@ -1,5 +1,6 @@
+import sqlite3
 import pandas as pd  # pandas is a library for working with tables (DataFrames)
-from app.data.db import connect_database
+from app.app.data.db import connect_database
 from pathlib import Path  # pathlib helps you work with file and folder paths
 import re  # re is the regular expressions module for pattern matching in text
 
