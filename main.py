@@ -1,11 +1,11 @@
 from app.data.db import DB_PATH, connect_database
 from app.data.schema import create_all_tables,load_all_csv_data, CSV_PATHS
 from app.services.user_service import register_user, login_user, migrate_users_from_file
-from app.data.incidents import insert_incident, get_all_incidents
-from app.data.datasets import insert_dataset, get_all_datasets
-from app.data.tickets import insert_ticket, get_all_tickets
-from app.data.users import insert_user, get_all_users
-from app.data.users import update_user_role, delete_user, check_username_exists
+from app.data.incidents import insert_incident, get_all_incidents,update_incident_status, delete_incident
+from app.data.datasets import insert_dataset, get_all_datasets, update_dataset_record_count, delete_dataset
+from app.data.tickets import insert_ticket, get_all_tickets,update_ticket_status, delete_ticket
+from app.data.users import insert_user, get_all_users,delete_user, check_username_exists
+
 
 def main():
     print("=" * 60)
@@ -127,7 +127,27 @@ def main():
     users_df = get_all_users()
     print(f"Total users: {len(users_df)}")
 
-    # 5. Query data
+    # 5. cleaning data
+    print("\n" + "-" * 30)
+    print("CLEANUP")
+    print("-" * 30)
+
+    if  incident_id:
+        delete_incident(incident_id)
+        print(f"Deleted incident #{incident_id}")
+
+    if test_ticket_id:
+        delete_ticket(test_ticket_id)
+        print(f"Deleted ticket #{test_ticket_id}")
+
+    if dataset_id:
+        delete_dataset(dataset_id)
+        print(f"Deleted dataset #{dataset_id}")
+
+    if test_username:
+        delete_user(test_username)
+        print(f"Deleted user '{test_username}'")
+
 def demonstrate_all_crud():
     """Show CRUD for all 3 domains """
     print("\n" + "=" * 60)
@@ -138,25 +158,47 @@ def demonstrate_all_crud():
     print("\n1. CYBERSECURITY:")
     print("   Create: Insert new incident")
     incident_id = insert_incident("2024-11-10", "DDoS", "High", "Open", "Test DDoS attack", "admin")
-    print(f"   Read: Get all incidents ({len(get_all_incidents())} total)")
-    print("   Update: Would update status here")
-    print("   Delete: Would delete incident here")
+    print(f"   Create: Incident #{incident_id}")
+    incidents = get_all_incidents()
+    print(f"   Read: {len(incidents)} incidents")
+    conn = connect_database()
+    if incident_id:
+        update_incident_status(conn, incident_id, "In Progress")
+        print("   Update: Status changed")
+        delete_incident(conn, incident_id)
+        print("   Delete: Incident removed")
+    conn.close()
 
     # 2. DATA SCIENCE DOMAIN
     print("\n2. DATA SCIENCE:")
     print("   Create: Insert new dataset")
-    # You need to import datasets functions
-    from app.data.datasets import insert_dataset
     dataset_id = insert_dataset("Test_Dataset", "Test", "Manual", "2024-11-10", 100, 5.0, "admin", "2024-11-10")
     print(f"   Created dataset #{dataset_id}")
+    datasets = get_all_datasets()
+    print(f"   Read: {len(datasets)} datasets")
+
+    if dataset_id:
+        update_dataset_record_count(dataset_id, 750)
+        print("   Update: Record count updated")
+        delete_dataset(dataset_id)
+        print("   Delete: Dataset removed")
+    conn.close()
 
     # 3. IT OPERATIONS DOMAIN
     print("\n3. IT OPERATIONS:")
     print("   Create: Insert new ticket")
-    # You need to import tickets functions
-    from app.data.tickets import insert_ticket
-    ticket_id = insert_ticket("T9999", "Medium", "Test Ticket", "Testing CRUD", "IT_Support_A", "General", "Open", None)
+    demo_ticket_id = "TDEMO001"
+    ticket_id = insert_ticket(demo_ticket_id, "Medium", "Test Ticket", "Testing CRUD", "IT_Support_A", "General", "Open", None)
     print(f"Created ticket #{ticket_id}")
+    tickets = get_all_tickets()
+    print(f"   Read: {len(tickets)} tickets")
+
+    if demo_ticket_id:
+        update_ticket_status(demo_ticket_id, "Resolved")
+        print("   Update: Status updated")
+        delete_ticket(demo_ticket_id)
+        print(" Delete: Ticket removed")
+    conn.close()
 
     print("\nAll 3 domains have CRUD operations implemented!")
 
@@ -192,6 +234,7 @@ def setup_database_complete():
     print("\n[4/5] Loading CSV data...")
     csv_paths_map = CSV_PATHS
     total_rows = load_all_csv_data(conn, csv_paths_map)
+    print(f"Loaded {total_rows} rows")
 
     # Step 5: Verify
     print("\n[5/5] Verifying database setup...")
