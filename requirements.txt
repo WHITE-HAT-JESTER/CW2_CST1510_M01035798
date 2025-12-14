@@ -1,5 +1,2 @@
 #project modules to install
-streamlit==1.52.1
-pandas==2.3.3
 bcrypt==5.0.0
-streamlit-option-menu==0.4.0

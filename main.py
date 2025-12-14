@@ -1,5 +1,6 @@
 from app.data.db import DB_PATH, connect_database
-from app.data.schema import create_all_tables,load_all_csv_data, CSV_PATHS
+from app.data.schema import create_all_tables, load_all_csv_data, CSV_PATHS
+import app.data.schema as schema
 from app.services.user_service import register_user, login_user, migrate_users_from_file
 from app.data.incidents import insert_incident, get_all_incidents,update_incident_status, delete_incident
 from app.data.datasets import insert_dataset, get_all_datasets, update_dataset_record_count, delete_dataset
@@ -20,6 +21,17 @@ def main():
     # 2. Migrate users
     user_count=migrate_users_from_file()
     print(f"User count: {user_count}")
+
+    # Check and migrate legacy incident schema if available
+    try:
+        if hasattr(schema, 'migrate_cyber_incidents_table'):
+            migrated = schema.migrate_cyber_incidents_table(connect_database())
+            if migrated:
+                print("Applied migration: cyber_incidents schema")
+        else:
+            print("No legacy-schema migration function available; skipping.")
+    except Exception as e:
+        print(f"Schema migration check failed: {e}")
 
     # 3. Test authentication
     success, msg = register_user("ulia", "SecurePass123!", "analyst")
@@ -86,7 +98,7 @@ def main():
     ##IT USERS
     print("\n3. IT_TICKETS:")
     print("-" * 40)
-    tickets_df = get_all_datasets()
+    tickets_df = get_all_tickets()
     print(f"{len(tickets_df)} tickets found")
     test_ticket_id = "T9999"
     ticket_row_id = insert_ticket(
@@ -139,6 +151,10 @@ def main():
     if test_ticket_id:
         delete_ticket(test_ticket_id)
         print(f"Deleted ticket #{test_ticket_id}")
+
+    if dataset_id:
+        delete_dataset(dataset_id)
+        print(f"Deleted dataset #{dataset_id}")
 
     if test_username:
         delete_user(test_username)
