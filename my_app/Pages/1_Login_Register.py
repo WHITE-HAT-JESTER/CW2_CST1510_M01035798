@@ -1,7 +1,7 @@
 import streamlit as st
 # from streamlit_authenticator import authenticator as sta
 # from streamlit_authenticator.utilities import LoginError
-from services.user_service import login_user, register_user
+from my_app.services.user_service import login_user, register_user
 st.set_page_config(page_title="Login / Register", page_icon="🔑", layout="centered")
 
 # ---------- Initialise session state ----------
@@ -22,7 +22,7 @@ if st.session_state.logged_in:
     st.success(f"Access Granted **{st.session_state.username}**.")
     if st.button("Dashboards"):
         # Use the official navigation API to switch pages
-        st.switch_page("pages/2_Dashboard.py")  # path is relative to Home.py :contentReference[oaicite:1]{index=1}
+        st.switch_page("pages/2_Dashboard.py")  # path is relative to Home.py
     st.stop()
 
 
@@ -58,23 +58,23 @@ with tab_login:
 with tab_register:
     st.subheader("Register")
 
-    new_username = st.text_input("Choose a username", key="register_username")
-    new_password = st.text_input("Choose a password", type="password", key="register_password")
+    register_username = st.text_input("Choose a username", key="register_username")
+    register_password = st.text_input("Choose a password", type="password", key="register_password")
     confirm_password = st.text_input("Confirm password", type="password", key="register_confirm")
 
     if st.button("Create account"):
         # Basic checks
-        if not new_username or not new_password:
+        if not register_username or not register_password:
             st.warning("Please fill in all fields.")
-        elif new_password != confirm_password:
+        elif register_password != confirm_password:
             st.error("Passwords do not match.")
-        elif len(new_password) < 8:
+        elif len(register_password) < 8:
             st.warning("Password must be at least 8 characters long.")
-        elif new_username in st.session_state.users:
+        elif register_username in st.session_state.users:
             st.error("Username already exists. Choose another one.")
         else:
             # "Save" user in our simple in-memory store
-            st.session_state.users[new_username] = new_password
+            st.session_state.users[register_username] = register_password
 
             st.success("Account created!")
             st.switch_page("Pages/2_Dashboard.py")

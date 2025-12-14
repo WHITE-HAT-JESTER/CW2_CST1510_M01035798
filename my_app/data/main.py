@@ -1,11 +1,11 @@
-from app.data.db import DB_PATH, connect_database
-from app.data.schema import create_all_tables, load_all_csv_data, CSV_PATHS
-import app.data.schema as schema
-from app.services.user_service import register_user, login_user, migrate_users_from_file
-from app.data.incidents import insert_incident, get_all_incidents,update_incident_status, delete_incident
-from app.data.datasets import insert_dataset, get_all_datasets, update_dataset_record_count, delete_dataset
-from app.data.tickets import insert_ticket, get_all_tickets,update_ticket_status, delete_ticket
-from app.data.users import insert_user, get_all_users,delete_user, check_username_exists
+from db import DB_PATH, connect_database
+from schema import create_all_tables, load_all_csv_data, CSV_PATHS
+import schema as schema
+from my_app.services.user_service import register_user, login_user, migrate_users_from_file
+from incidents import insert_incident, get_all_incidents,update_incident_status, delete_incident
+from datasets import insert_dataset, get_all_datasets, update_dataset_record_count, delete_dataset
+from tickets import insert_ticket, get_all_tickets,update_ticket_status, delete_ticket
+from users import insert_user, get_all_users,delete_user, check_username_exists
 
 
 def main():
