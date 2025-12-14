@@ -17,7 +17,8 @@ if "username" not in st.session_state:
     st.session_state.username = ""
 
 st.title("🔐 Hello, Welcome.")
-# If already logged in, show message and button to go to dashboard
+
+# If already logged in, go straight to dashboard (optional)
 if st.session_state.logged_in:
     st.success(f"Access Granted **{st.session_state.username}**.")
     if st.button("Dashboards"):
