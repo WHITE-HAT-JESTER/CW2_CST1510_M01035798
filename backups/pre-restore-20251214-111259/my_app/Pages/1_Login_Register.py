@@ -1,8 +1,7 @@
 import streamlit as st
 from streamlit_authenticator import authenticator as sta
 from streamlit_authenticator.utilities import LoginError
-from app.services.user_service import login_user, register_user
-from app.data.db import DatabaseManager
+from my_app.services.user_service import login_user, register_user
 
 st.set_page_config(page_title="Login / Register", page_icon="🔑", layout="centered")
 

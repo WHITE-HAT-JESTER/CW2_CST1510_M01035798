@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from app.data.incidents import get_all_incidents, insert_incident
+from my_app.data.incidents import get_all_incidents, insert_incident
 
 df_incidents=get_all_incidents()
 st.dataframe(df_incidents)

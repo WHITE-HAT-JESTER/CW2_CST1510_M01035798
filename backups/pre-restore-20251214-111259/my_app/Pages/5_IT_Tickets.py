@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from app.app.data.tickets import get_all_tickets, insert_ticket
+from my_app.data.tickets import get_all_tickets, insert_ticket
 
 st.title("IT Operations")
 

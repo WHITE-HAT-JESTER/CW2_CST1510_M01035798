@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-from app.app.data.db import connect_database
+from app.data.db import connect_database
 
 #Analytical Queries (The Big 6) - OPTIONAL it could be done with pandas
 
@@ -100,8 +100,18 @@ def get_all_incidents():
         conn.close()
 
 def update_incident_status(conn, incident_id, new_status):
-    """Update incident status."""
-    conn = connect_database()
+    """
+    Update incident status.
+    """
+    # simple argument sniffing so callers don't have to think too hard
+    if new_status is None:
+        # called as update_incident_status(incident_id, new_status)
+        incident_id, new_status = conn, incident_id
+        conn = connect_database()
+        managed = True
+    else:
+        managed = False
+
     cursor = conn.cursor()
     sql = "UPDATE cyber_incidents SET status = ? WHERE incident_id = ?"
 
@@ -109,16 +119,25 @@ def update_incident_status(conn, incident_id, new_status):
         cursor.execute(sql, (new_status, incident_id))
         conn.commit()
         print("Updated incident status successfully.")
-        return cursor.rowcount #returns the number of rows affected
+        return cursor.rowcount
     except sqlite3.Error as e:
         print(f"Database error. Failed to update incident status: {e}")
         return 0
     finally:
-        conn.close()
+        if managed:
+            conn.close()
 
-def delete_incident(conn, incident_id):
-    """Delete incident from database."""
-    conn = connect_database()
+def delete_incident(conn, incident_id=None):
+    """Delete incident from database.
+    """
+    if incident_id is None:
+        # called as delete_incident(incident_id)
+        incident_id = conn
+        conn = connect_database()
+        managed = True
+    else:
+        managed = False
+
     cursor = conn.cursor()
     sql = "DELETE FROM cyber_incidents WHERE incident_id = ?"
 
@@ -130,20 +149,24 @@ def delete_incident(conn, incident_id):
     except sqlite3.Error as e:
         print(f"Database error. Failed to delete incident: {e}")
         return 0
+    finally:
+        if managed:
+            conn.close()
 
-#run analytical queries
-conn = connect_database()
+if __name__ == "__main__":
+    # quick demo when running this file directly (won't run on import)
+    conn = connect_database()
 
-print("\n Incidents by Type:")
-df_by_type = get_incidents_by_type_count(conn)
-print(df_by_type)
+    print("\n Incidents by Type:")
+    df_by_type = get_incidents_by_type_count(conn)
+    print(df_by_type)
 
-print("\n High Severity Incidents by Status:")
-df_high_severity = get_high_severity_by_status(conn)
-print(df_high_severity)
+    print("\n High Severity Incidents by Status:")
+    df_high_severity = get_high_severity_by_status(conn)
+    print(df_high_severity)
 
-print("\n Incident Types with Many Cases (>5):")
-df_many_cases = get_incident_types_with_many_cases(conn, min_count=5)
-print(df_many_cases)
+    print("\n Incident Types with Many Cases (>5):")
+    df_many_cases = get_incident_types_with_many_cases(conn, min_count=5)
+    print(df_many_cases)
 
-conn.close()
+    conn.close()

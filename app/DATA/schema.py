@@ -1,6 +1,5 @@
-import sqlite3
 import pandas as pd  # pandas is a library for working with tables (DataFrames)
-from app.app.data.db import connect_database
+from app.data.db import connect_database
 from pathlib import Path  # pathlib helps you work with file and folder paths
 import re  # re is the regular expressions module for pattern matching in text
 
@@ -11,7 +10,7 @@ DATA_DIR = PROJECT_ROOT / "DATA"
 CSV_PATHS = {
     "users": DATA_DIR / "users.txt",
     "cyber_incidents": DATA_DIR / "cyber_incidents.csv",
-    "datasets_metadata": DATA_DIR / "datasets_metapidata.csv",
+    "datasets_metadata": DATA_DIR / "datasets_metadata.csv",
     "it_tickets": DATA_DIR / "it_tickets.csv",
 }
 
@@ -179,7 +178,7 @@ def read_users(path: Path) -> pd.DataFrame:
     preview_raw_file(path, max_lines=12)
     raise ValueError("Could not parse users file into username and password_hash")
 
-# This function loads the users table into the database
+#  loads the users table into the database
 def load_users_table(conn, path: Path, replace: bool = False) -> int:
     try:
         df = read_users(path)
@@ -228,12 +227,38 @@ def clean_unnamed_columns(df: pd.DataFrame) -> pd.DataFrame:
 def load_cyber_incidents_table(conn, path: Path) -> int:
     try:
         df = simple_read_csv(path)
-        df.rename(columns={"incident_id": "id", "timestamp": "date", "category": "incident_type"}, inplace=True)
+        # Normalize column names so they match the table schema
+        cols_lower = {c.lower(): c for c in df.columns}
+        # Map common alternative names to canonical columns
+        rename_map = {}
+        if "incident_id" in cols_lower and "id" not in cols_lower:
+            # keep as-is
+            pass
+        elif "id" in cols_lower and "incident_id" not in cols_lower:
+            rename_map[cols_lower["id"]] = "incident_id"
+        if "severity" in cols_lower and "severity" not in cols_lower:
+            rename_map[cols_lower["severit"]] = "severity"
+
+        if "timestamp" in cols_lower and "date" not in cols_lower:
+            rename_map[cols_lower["timestamp"]] = "date"
+        if "category" in cols_lower and "incident_type" not in cols_lower:
+            rename_map[cols_lower["category"]] = "incident_type"
+
+        if rename_map:
+            df.rename(columns=rename_map, inplace=True)
         df = clean_unnamed_columns(df)
         df["reported_by"] = df.get("reported_by", "unknown")  # add default if missing
         df["created_at"] = pd.Timestamp.now()  # add current timestamp
-        expected = ["id", "date", "incident_type", "severity", "status", "description", "reported_by", "created_at"]
-        df = df[expected]
+        expected = ["incident_id", "date", "incident_type", "severity", "status", "description", "reported_by", "created_at"]
+        # Keep only expected columns that exist
+        df = df.reindex(columns=[c for c in expected if c in df.columns])
+        # If incident_id is missing, let SQL autoincrement it/drop it
+        if "incident_id" in df.columns:
+            # ensure it's integer-ish when possible
+            df["incident_id"] = pd.to_numeric(df["incident_id"], errors="coerce").astype("Int64")
+        else:
+            # nothing to do, SQL will autogenerate the primary key
+            pass
         df.to_sql("cyber_incidents", conn, if_exists="replace", index=False)
         print(f"Loaded cyber_incidents: {len(df)} rows")
         return len(df)
@@ -256,7 +281,8 @@ def load_datasets_metadata_table(conn, path: Path) -> int:
         df["file_size_mb"] = df.get("file_size_mb", 0.0)
         df["created_at"] = pd.Timestamp.now()
         expected = ["dataset_id", "dataset_name", "category", "source", "last_updated", "record_count", "file_size_mb", "uploaded_by", "created_at"]
-        df = df[expected]
+        # Keep only expected columns that exist
+        df = df.reindex(columns=[c for c in expected if c in df.columns])
         df.to_sql("datasets_metadata", conn, if_exists="replace", index=False)
         print(f"Loaded datasets_metadata: {len(df)} rows")
         return len(df)
@@ -290,8 +316,12 @@ def load_it_tickets_table(conn, path: Path) -> int:
     return 0
 
 #Load all CSV data
-def load_all_csv_data(conn):
+def load_all_csv_data(conn, csv_paths: dict | None = None):
+    """Load CSV files into DB. `csv_paths` can override the default `CSV_PATHS`."""
     print("\nLoading CSV files into database tables...")
+
+    if csv_paths is None:
+        csv_paths = CSV_PATHS
 
     loaders = {
         "cyber_incidents": load_cyber_incidents_table,
@@ -301,9 +331,9 @@ def load_all_csv_data(conn):
 
     total_rows = 0
     for table_name, loader in loaders.items():
-        csv_path = CSV_PATHS[table_name]
-        if csv_path.exists():
-            rows_loaded = loader(conn, csv_path)
+        csv_path = csv_paths.get(table_name) if isinstance(csv_paths, dict) else CSV_PATHS[table_name]
+        if csv_path and Path(csv_path).exists():
+            rows_loaded = loader(conn, Path(csv_path))
             print(f"{table_name}: {rows_loaded} rows loaded")
             total_rows += rows_loaded
         else:
@@ -329,6 +359,7 @@ def setup_database_complete():
     # 3. Load CSV data
     print("\n[2/3] Loading CSV data...")
     total_rows = load_all_csv_data(conn)
+
 
     # 4. Verify
     print("\n[3/3] Verifying setup...")
