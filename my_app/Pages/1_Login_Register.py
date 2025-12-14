@@ -2,7 +2,6 @@ import streamlit as st
 # from streamlit_authenticator import authenticator as sta
 # from streamlit_authenticator.utilities import LoginError
 from services.user_service import login_user, register_user
-
 st.set_page_config(page_title="Login / Register", page_icon="🔑", layout="centered")
 
 # ---------- Initialise session state ----------
@@ -24,7 +23,7 @@ if st.session_state.logged_in:
     if st.button("Dashboards"):
         # Use the official navigation API to switch pages
         st.switch_page("pages/2_Dashboard.py")  # path is relative to Home.py :contentReference[oaicite:1]{index=1}
-    st.stop()  # Don’t show login/register again
+    st.stop()
 
 
 # ---------- Tabs: Login / Register ----------
@@ -40,11 +39,11 @@ with tab_login:
     if st.button("Log in", type="primary"):
         # Simple credential check (for teaching only – not secure!)
         users = st.session_state.login_user(login_username, login_password)
-        if login_user in users and users[login_user] == login_password:
-            success, message = login_user(login_username, login_password)
+        if login_user in users and users[login_username] == login_password:
+
             st.session_state.logged_in = True
-            st.session_state.username = login_user
-            st.success(f"Welcome back, {login_user}! ")
+            st.session_state.username = login_username
+            st.success(f"Welcome back, {login_username}! ")
 
             # Redirect to dashboard page
             st.switch_page("Pages/2_Dashboard.py")
@@ -53,7 +52,7 @@ with tab_login:
             st.info("Tip: Password must be at least 8 characters long, contain "
                     "at least one uppercase, one lowercase and one number.")
 
-login_user()
+
 
 # ----- REGISTER TAB -----
 with tab_register:
@@ -76,8 +75,8 @@ with tab_register:
         else:
             # "Save" user in our simple in-memory store
             st.session_state.users[new_username] = new_password
-            success, message = register_user(new_username, new_password)
+
             st.success("Account created!")
             st.switch_page("Pages/2_Dashboard.py")
 
-register_user()
+

@@ -21,18 +21,15 @@ selected=option_menu(
     )
 
 # Navigation buttons
-col1, col2, col3 = st.columns(3)
-with col1:
-    if selected == "Cybersecurity":
+
+if selected == "Cybersecurity":
          st.title(f"{selected}")
          st.switch_page("Pages/3_Cybersecurity.py")
 
-with col2:
-    if selected == "Datasets":
+elif selected == "Datasets":
          st.title(f"{selected}")
          st.switch_page("Pages/4_Datasets.py")
 
-with col3:
-    if selected == "IT Tickets":
+elif selected == "IT Tickets":
         st.title(f"{selected}")
         st.switch_page("Pages/5_IT_Tickets.py")

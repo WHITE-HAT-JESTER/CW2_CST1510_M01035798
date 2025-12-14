@@ -316,7 +316,7 @@ def load_it_tickets_table(conn, path: Path) -> int:
     return 0
 
 #Load all CSV data
-def load_all_csv_data(conn, csv_paths: dict | None = None):
+def load_all_csv_data(conn, csv_paths= None):
     """Load CSV files into DB. `csv_paths` can override the default `CSV_PATHS`."""
     print("\nLoading CSV files into database tables...")
 
